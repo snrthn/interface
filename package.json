@@ -1,0 +1,23 @@
+{
+  "name": "interface",
+  "version": "1.0.0",
+  "description": "这是一个公共接口程序，适用于临时提供数据补充。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/snrthn/interface.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/snrthn/interface/issues"
+  },
+  "homepage": "https://github.com/snrthn/interface#readme",
+  "devDependencies": {
+    "rd": "^2.0.1"
+  }
+}
