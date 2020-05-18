@@ -116,7 +116,7 @@ function runServer () {
 					} else {
 						require(path.join(__dirname, './src/controller') + item.cont)(req, res, urlObj.query, postData, jsonData);
 					}
-				})				
+				})
 			}
 		})
 
