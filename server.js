@@ -62,7 +62,9 @@ function runServer () {
 	var server = http.createServer(function (req, res) {
 		/* 设置请求头和跨域 */
 		res.writeHead(200, {
-			'Content-Type': 'text/json;charset=utf-8',
+			'Content-Type': 'application/json;charset=UTF-8',
+			'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
+			'Access-Control-Allow-Headers': '',
 			'Access-Control-Allow-Origin': '*'
 		});
 
