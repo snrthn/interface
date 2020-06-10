@@ -2,6 +2,7 @@
 var path = require('path');
 var urlParser = require('url');
 var controller = require('./src');
+var config = require('./config');
 var qs = require('qs');
 
 /* 定义控制器路由表 */
@@ -77,7 +78,7 @@ function runServer () {
 		/* 处理首页 */
 		if (urlObj.pathname === '/') {
 			isNoPage = true;
-			res.write('Hello World!');
+			res.write(config.indexMsg);
 			res.end();
 		}
 
@@ -124,13 +125,13 @@ function runServer () {
 
 		/* 未匹配到页面 404 */
 		if (!isNoPage) {
-			res.write('页面未找到 - 404');
+			res.write(config.errMsg);
 			res.end();
 		}
 	})
 
 	/* 监听端口 */
-	server.listen(2306, function () {
-		console.log('MU2306端口监听中...');
+	server.listen(config.port, function () {
+		console.log(config.port + '端口监听中...');
 	})
 }
