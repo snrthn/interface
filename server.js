@@ -145,9 +145,7 @@ function runServer () {
 									/* 检查文件内容是否符合 JSON 规范 */
 									var json = JSON.parse(dataStr);
 
-									/* 继续使用 require 读取 JOSN 文件内容 */
-									jsonData = require(path.join(__dirname, './src/data') + item.data);
-									res.write(JSON.stringify(jsonData));
+									res.write(JSON.stringify(json));
 								} catch (err) {
 									res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
 								}
