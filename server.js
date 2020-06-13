@@ -138,8 +138,16 @@ function runServer () {
 							} else {
 								var dataStr = data.toString();
 								try {
+									/* 对 utf-8 编码的 JSON 文件进行特殊处理 */
+									if (dataStr.substr(0, 1).charCodeAt() === 65279) {
+										dataStr = dataStr.substr(1, dataStr.length - 1);
+									}
+									/* 检查文件内容是否符合 JSON 规范 */
 									var json = JSON.parse(dataStr);
-									res.write(JSON.stringify(json));
+
+									/* 继续使用 require 读取 JOSN 文件内容 */
+									jsonData = require(path.join(__dirname, './src/data') + item.data);
+									res.write(JSON.stringify(jsonData));
 								} catch (err) {
 									res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
 								}
