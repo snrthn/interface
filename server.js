@@ -3,6 +3,7 @@ var path = require('path');
 var urlParser = require('url');
 var controller = require('./src');
 var config = require('./config');
+var fs = require('fs');
 var qs = require('qs');
 
 /* 定义控制器路由表 */
@@ -32,6 +33,7 @@ controller(function (filesObj) {
 		var data = dataCollection[i];
 		for (var j = 0; j < contLen; j++) {
 			var cont = contCollection[j];
+			var routLen = routerList.length;
 
 			/* 剥离路径 */
 			var strDat = data.substr(data.lastIndexOf('/'));
@@ -40,6 +42,16 @@ controller(function (filesObj) {
 			/* 剥离后缀 */
 			var resDat = strDat.substr(0, strDat.lastIndexOf('.'));
 			var resCon = strCon.substr(0, strCon.lastIndexOf('.'));
+
+			if (resDat !== resCon) {
+				var isResCon = false;
+				for (var k = 0; k < routLen; k++) {
+					if (routerList[k]['cont'] === cont) {
+						isResCon = true;
+					}
+				}
+				if (!isResCon) routerList.push({data: null, cont});
+			}
 
 			if (resDat === resCon) {
 				isControl = true;
@@ -57,6 +69,36 @@ controller(function (filesObj) {
 	/* 填装完成创建服务器 */
 	runServer();
 });
+
+/* 接收POST数据流 */
+function postDataFun (req, callback) {
+	/* 取POST参数 */
+	var tempStream = [];
+
+	/* 分段接收 */
+	req.on('data', function (str) {
+		tempStream.push(str);
+	})
+
+	/* 接收完成 */
+	req.on('end', function () {
+		var postData;
+		var postStr = tempStream.toString();
+
+		/* 容错 */
+		try {
+			if (postStr.indexOf('WebKitFormBoundary') !== -1) {
+				postData = fdToObj(postStr);
+			} else {
+				postData = JSON.parse(postStr);
+			}
+		} catch (e) {
+			postData = qs.parse(postStr, {ignoreQueryPrefix: true});
+		}
+
+		if (callback && typeof callback === 'function') callback(postData);
+	})
+}
 
 /* 创建服务器 */
 function runServer () {
@@ -84,40 +126,47 @@ function runServer () {
 
 		/* 匹配路由控制表 */
 		routerList.map(function (item) {
-			if (item.data.substr(0, item.data.lastIndexOf('.')) === urlObj.pathname) {
+			if (item.data && item.data.substr(0, item.data.lastIndexOf('.')) === urlObj.pathname) {
 				isNoPage = true;
-
-				/* 取POST参数 */
-				var tempStream = [];
-
-				/* 分段接收 */
-				req.on('data', function (str) {
-					tempStream.push(str);
-				})
-
-				/* 接收完成 */
-				req.on('end', function () {
-					var postData;
-					var postStr = tempStream.toString();
-
-					/* 容错 */
-					try {
-						if (postStr.indexOf('WebKitFormBoundary') !== -1) {
-							postData = fdToObj(postStr);
-						} else {
-							postData = JSON.parse(postStr);
-						}
-					} catch (e) {
-						postData = qs.parse(postStr, {ignoreQueryPrefix: true});
-					}
-
+				postDataFun(req, function (postData) {
 					/* 输出 */
-					var jsonData = require(path.join(__dirname, './src/data') + item.data);
+					var jsonData;
 					if (!item.cont) {
-						res.write(JSON.stringify(jsonData));
-						res.end();
+						fs.readFile(path.join(__dirname, './src/data') + item.data, function (err, data) {
+							if (err) {
+								res.write('错误: 数据 json 文件读取失败!');
+							} else {
+								var dataStr = data.toString();
+								try {
+									var json = JSON.parse(dataStr);
+									res.write(JSON.stringify(json));
+								} catch (err) {
+									res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
+								}
+							}
+							res.end();
+						})
 					} else {
-						require(path.join(__dirname, './src/controller') + item.cont)(req, res, urlObj.query, postData, jsonData);
+						jsonData = require(path.join(__dirname, './src/data') + item.data);
+						var resFun = require(path.join(__dirname, './src/controller') + item.cont);
+						if (typeof resFun === 'function') {
+							resFun(req, res, urlObj.query, postData, jsonData);
+						} else {
+							res.write('错误: 控制器 controller 内部不是一个函数!');
+							res.end();
+						}
+					}
+				});
+			}
+			if (!item.data && item.cont && item.cont.substr(0, item.cont.lastIndexOf('.')) === urlObj.pathname) {
+				isNoPage = true;
+				postDataFun(req, function (postData) {
+					var resFun = require(path.join(__dirname, './src/controller') + item.cont);
+					if (typeof resFun === 'function') {
+						resFun(req, res, urlObj.query, postData, null);
+					} else {
+						res.write('错误: 控制器 controller 内部不是一个函数!');
+						res.end();
 					}
 				})
 			}
