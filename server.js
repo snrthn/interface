@@ -192,13 +192,9 @@ function fillRouterTable (callback) {
 				var cont = contCollection[j];
 				var routLen = routerList.length;
 
-				/* 剥离路径 */
-				var strDat = data.substr(data.lastIndexOf('/'));
-				var strCon = cont.substr(cont.lastIndexOf('/'));
-
 				/* 剥离后缀 */
-				var resDat = strDat.substr(0, strDat.lastIndexOf('.'));
-				var resCon = strCon.substr(0, strCon.lastIndexOf('.'));
+				var resDat = data.substr(0, data.lastIndexOf('.'));
+				var resCon = cont.substr(0, cont.lastIndexOf('.'));
 
 				if (resDat !== resCon) {
 					var isResCon = false;
