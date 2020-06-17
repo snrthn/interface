@@ -1,67 +1,248 @@
-﻿var path = require('path');
-var rd = require('rd');
+﻿var http = require('http');
+var path = require('path');
+var urlParser = require('url');
+var controller = require('./router');
+var config = require('../config');
+var fs = require('fs');
+var qs = require('qs');
 
-/* 读取目录 */
-function readDir (dir) {
-	return new Promise(function (resolve, reject) {
-		rd.read(path.join(__dirname, dir), function (err, files) {
-			if (err) reject(err);
-			resolve(files);
+/* 定义控制器路由表 */
+var routerList = [];
+
+/* 创建服务器 */
+function initServer () {
+	var server = http.createServer(function (req, res) {
+		/* 刷新路由表 */
+		routerList = [];
+
+		fillRouterTable(function () {
+			/* 设置请求头和跨域 */
+			res.writeHead(200, {
+				'Content-Type': 'application/json;charset=UTF-8',
+				'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
+				'Access-Control-Allow-Headers': '',
+				'Access-Control-Allow-Origin': '*'
+			});
+
+			/* 取URL参数 */
+			var urlObj = urlParser.parse(req.url, true);
+
+			/* 判断是否匹配到 */
+			var isNoPage = false;
+
+			/* 处理首页 */
+			if (urlObj.pathname === '/') {
+				isNoPage = true;
+				res.write(config.indexMsg);
+				res.end();
+			}
+
+			/* 匹配路由控制表 */
+			routerList.map(function (item) {
+				if (item.data && item.data.substr(0, item.data.lastIndexOf('.')) === urlObj.pathname) {
+					isNoPage = true;
+					postDataFun(req, function (postData) {
+						/* 输出 */
+						var jsonData;
+						if (!item.cont) {
+							fs.readFile(path.join(__dirname, './data') + item.data, function (err, data) {
+								if (err) {
+									res.write('错误: 数据 json 文件读取失败!');
+								} else {
+									var dataStr = data.toString();
+									try {
+										/* 对 utf-8 编码的 JSON 文件进行特殊处理 */
+										if (dataStr.substr(0, 1).charCodeAt() === 65279) {
+											dataStr = dataStr.substr(1, dataStr.length - 1);
+										}
+										/* 检查文件内容是否符合 JSON 规范 */
+										var json = JSON.parse(dataStr);
+
+										res.write(JSON.stringify(json));
+									} catch (err) {
+										res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
+									}
+								}
+								res.end();
+							})
+						} else {
+							jsonData = require(path.join(__dirname, './data') + item.data);
+							fs.readFile(path.join(__dirname, './controller') + item.cont, function (err, data) {
+								if (err) {
+									res.write('错误: 控制器 js 文件读取失败!');
+								} else {
+									var strFun = data.toString();
+									try {
+										/* 对 utf-8 编码的 JSON 文件进行特殊处理 */
+										if (strFun.substr(0, 1).charCodeAt() === 65279) {
+											strFun = strFun.substr(1, strFun.length - 1);
+										}
+
+										// 控制器为空
+										if (strFun.length === 0) {
+											res.write('错误: 控制器文件为空!');
+										} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
+											res.write('错误: 控制器函数体内缺少回执语句!');
+										} else {
+											Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
+											var conFun = require(path.join(__dirname, './controller') + item.cont);
+											if (conFun && typeof conFun === 'function') {
+												conFun(req, res, urlObj.query, postData, jsonData);
+											} else {
+												res.write('错误: 控制器必须是一个函数!');
+											}
+										}
+
+									} catch (err) {
+										res.write('错误: ' + err.message);
+									}
+								}
+							res.end();
+						})
+						}
+					});
+				}
+				if (!item.data && item.cont && item.cont.substr(0, item.cont.lastIndexOf('.')) === urlObj.pathname) {
+					isNoPage = true;
+					postDataFun(req, function (postData) {
+						fs.readFile(path.join(__dirname, './controller') + item.cont, function (err, data) {
+							if (err) {
+								res.write('错误: 控制器 js 文件读取失败!');
+							} else {
+								var strFun = data.toString();
+								
+								try {
+									/* 对 utf-8 编码的 JSON 文件进行特殊处理 */
+									if (strFun.substr(0, 1).charCodeAt() === 65279) {
+										strFun = strFun.substr(1, strFun.length - 1);
+									}
+
+									// 控制器为空
+									if (strFun.length === 0) {
+										res.write('错误: 控制器文件为空!');
+									} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
+										res.write('错误: 控制器函数体内缺少回执语句!');
+									} else {
+										Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
+										var conFun = require(path.join(__dirname, './controller') + item.cont);
+										if (conFun && typeof conFun === 'function') {
+											conFun(req, res, urlObj.query, postData, null);
+										} else {
+											res.write('错误: 控制器必须是一个函数!');
+										}
+									}
+
+								} catch (err) {
+									res.write('错误: ' + err.message);
+								}
+							}
+							res.end();
+						})
+					})
+				}
+			})
+
+			/* 未匹配到页面 404 */
+			if (!isNoPage) {
+				res.write(config.errMsg);
+				res.end();
+			}
 		});
+	})
+
+	/* 监听端口 */
+	server.listen(config.port, function () {
+		console.log(config.port + '端口监听中...');
 	})
 }
 
-/* 替换双斜杠 */
-function replaceSlash (arr) {
-	var newArr = arr.map(function (item) {
-		return item.replace(/\\/g, '/');
+/* 填装控制器路由表 */
+function fillRouterTable (callback) {
+	controller(function (filesObj) {
+		var { dataCollection, contCollection } = filesObj;
+
+		var dataLen = dataCollection.length;
+		var contLen = contCollection.length;
+
+		for (var i = 0; i < dataLen; i++) {
+			/* 是否含有控制器 */
+			var isControl = false;
+			var data = dataCollection[i];
+			for (var j = 0; j < contLen; j++) {
+				var cont = contCollection[j];
+				var routLen = routerList.length;
+
+				/* 剥离后缀 */
+				var resDat = data.substr(0, data.lastIndexOf('.'));
+				var resCon = cont.substr(0, cont.lastIndexOf('.'));
+
+				if (resDat !== resCon) {
+					var isResCon = false;
+					for (var k = 0; k < routLen; k++) {
+						if (routerList[k]['cont'] === cont) {
+							isResCon = true;
+						}
+					}
+					if (!isResCon) routerList.push({data: null, cont});
+				}
+
+				if (resDat === resCon) {
+					isControl = true;
+					/* 查到控制器 通过控制器处理之后再返回 */
+					routerList.push({data, cont});
+					break;
+				}
+			}
+			if (!isControl) {
+				/* 无控制器 数据直接返回 */
+				routerList.push({data, cont: null});
+			}
+		}
+
+		if (callback && typeof callback === 'function') callback();
 	})
-	return newArr;
 }
 
-/*截取有效目录*/
-function handleDir (arr) {
-	var baseDir = arr[0];
-	var temp = arr.splice(1);
-	var newArr = temp.map(function (item) {
-		return item.split(baseDir)[1];
-	});
-	return newArr;
+/* 接收POST数据流 */
+function postDataFun (req, callback) {
+	/* 取POST参数 */
+	var tempStream = [];
+
+	/* 分段接收 */
+	req.on('data', function (str) {
+		tempStream.push(str);
+	})
+
+	/* 接收完成 */
+	req.on('end', function () {
+		var postData;
+		var postStr = tempStream.toString();
+
+		/* 容错 */
+		try {
+			if (postStr.indexOf('WebKitFormBoundary') !== -1) {
+				postData = fdToObj(postStr);
+			} else {
+				postData = JSON.parse(postStr);
+			}
+		} catch (e) {
+			postData = qs.parse(postStr, {ignoreQueryPrefix: true});
+		}
+
+		if (callback && typeof callback === 'function') callback(postData);
+	})
 }
 
-/* 过虑条件 */
-function filterDir (arr, ext) {
-	var newArr = arr.filter(function (item) {
-		return item.lastIndexOf(ext) !== -1;
-	});
-	return newArr;
+/* formData 数据转 Object */
+function fdToObj (str) {
+	var arr = str.match(/\w+?="\w+"\r\n\r\n[^\n]+/g) || [];
+	var resObj = {};
+	arr.map(function (item) {
+		var temp = item.split('\r\n\r\n');
+		resObj[temp[0].split('=')[1]] = temp[1];
+	})
+	return resObj;
 }
 
-module.exports = function (callback) {
-	var dataCollection = [];
-	var contCollection = [];
-	Promise.all([
-		readDir('./data'),
-		readDir('./controller')
-	]).then(function ([arr1, arr2]) {
-		// 替换路径双斜杠
-		var repArr1 = replaceSlash(arr1);
-		var repArr2 = replaceSlash(arr2);
-
-		// 过滤根目录和基础目录
-		var remArr1 = handleDir(repArr1);
-		var remArr2 = handleDir(repArr2);
-
-		// 筛选指定格式的路径
-		var resArr1 = filterDir(remArr1, '.json');
-		var resArr2 = filterDir(remArr2, '.js');
-		
-		// 执行回调函数
-		callback({
-			dataCollection: resArr1,
-			contCollection: resArr2
-		});
-	}).catch(function (err) {
-		console.log(err);
-	});
-}
+/* 将服务器程序输出 */
+module.exports = initServer;
