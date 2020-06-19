@@ -97,8 +97,8 @@ function initServer () {
 										res.write('错误: ' + err.message);
 									}
 								}
-							res.end();
-						})
+								res.end();
+							})
 						}
 					});
 				}
