@@ -202,8 +202,6 @@ function fillRouterTable (callback) {
 			})
 		}
 
-		console.log(routerList);
-
 		if (callback && typeof callback === 'function') callback();
 	})
 }
