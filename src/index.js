@@ -20,7 +20,7 @@ function initServer () {
 			res.writeHead(200, {
 				'Content-Type': 'application/json;charset=UTF-8',
 				'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
-				'Access-Control-Allow-Headers': '',
+				'Access-Control-Allow-Headers': '*',
 				'Access-Control-Allow-Origin': '*'
 			});
 
