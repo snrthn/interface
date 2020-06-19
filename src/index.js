@@ -164,40 +164,45 @@ function fillRouterTable (callback) {
 		var dataLen = dataCollection.length;
 		var contLen = contCollection.length;
 
+		var temp = [];
+		var datExt = '';
+		var conExt = '';
+
 		for (var i = 0; i < dataLen; i++) {
-			/* 是否含有控制器 */
-			var isControl = false;
 			var data = dataCollection[i];
-			for (var j = 0; j < contLen; j++) {
-				var cont = contCollection[j];
-				var routLen = routerList.length;
+			if (!datExt) datExt = data.split(data.lastIndexOf('.'), data.length - 1);
+			var resDat = data.substr(0, data.lastIndexOf('.'));
+			temp.push(resDat);
+		}
 
-				/* 剥离后缀 */
-				var resDat = data.substr(0, data.lastIndexOf('.'));
-				var resCon = cont.substr(0, cont.lastIndexOf('.'));
-
-				if (resDat !== resCon) {
-					var isResCon = false;
-					for (var k = 0; k < routLen; k++) {
-						if (routerList[k]['cont'] === cont) {
-							isResCon = true;
-						}
-					}
-					if (!isResCon) routerList.push({data: null, cont});
-				}
-
-				if (resDat === resCon) {
-					isControl = true;
-					/* 查到控制器 通过控制器处理之后再返回 */
-					routerList.push({data, cont});
-					break;
-				}
-			}
-			if (!isControl) {
-				/* 无控制器 数据直接返回 */
-				routerList.push({data, cont: null});
+		for (var i = 0; i < contLen; i++) {
+			var cont = contCollection[i];
+			if (!conExt) conExt = cont.split(cont.lastIndexOf('.'), cont.length - 1);
+			var resCon = cont.substr(0, cont.lastIndexOf('.'));
+			if (temp.indexOf(resCon) !== -1) {				
+				routerList.push({
+					data: resCon + datExt,
+					cont
+				});
+				temp.splice(temp.indexOf(resCon), 1);
+			} else {
+				routerList.push({
+					data: null,
+					cont
+				});
 			}
 		}
+
+		var tempLen = temp.length;
+
+		for (var i = 0; i < tempLen; i++) {
+			routerList.push({
+				data: temp[i] + conExt,
+				cont: null
+			})
+		}
+
+		console.log(routerList);
 
 		if (callback && typeof callback === 'function') callback();
 	})
