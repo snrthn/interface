@@ -48,6 +48,7 @@ function initServer () {
 							fs.readFile(path.join(__dirname, './data') + item.data, function (err, data) {
 								if (err) {
 									res.write('错误: 数据 json 文件读取失败!');
+									res.end();
 								} else {
 									var dataStr = data.toString();
 									try {
@@ -59,17 +60,19 @@ function initServer () {
 										var json = JSON.parse(dataStr);
 
 										res.write(JSON.stringify(json));
+										res.end();
 									} catch (err) {
 										res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
+										res.end();
 									}
 								}
-								res.end();
 							})
 						} else {
 							jsonData = require(path.join(__dirname, './data') + item.data);
 							fs.readFile(path.join(__dirname, './controller') + item.cont, function (err, data) {
 								if (err) {
 									res.write('错误: 控制器 js 文件读取失败!');
+									res.end();
 								} else {
 									var strFun = data.toString();
 									try {
@@ -81,8 +84,10 @@ function initServer () {
 										// 控制器为空
 										if (strFun.length === 0) {
 											res.write('错误: 控制器文件为空!');
+											res.end();
 										} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
 											res.write('错误: 控制器函数体内缺少回执语句!');
+											res.end();
 										} else {
 											Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
 											var conFun = require(path.join(__dirname, './controller') + item.cont);
@@ -90,14 +95,15 @@ function initServer () {
 												conFun(req, res, urlObj.query, postData, jsonData);
 											} else {
 												res.write('错误: 控制器必须是一个函数!');
+												res.end();
 											}
 										}
 
 									} catch (err) {
 										res.write('错误: ' + err.message);
+										res.end();
 									}
 								}
-								res.end();
 							})
 						}
 					});
@@ -108,6 +114,7 @@ function initServer () {
 						fs.readFile(path.join(__dirname, './controller') + item.cont, function (err, data) {
 							if (err) {
 								res.write('错误: 控制器 js 文件读取失败!');
+								res.end();
 							} else {
 								var strFun = data.toString();
 								
@@ -120,8 +127,10 @@ function initServer () {
 									// 控制器为空
 									if (strFun.length === 0) {
 										res.write('错误: 控制器文件为空!');
+										res.end();
 									} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
 										res.write('错误: 控制器函数体内缺少回执语句!');
+										res.end();
 									} else {
 										Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
 										var conFun = require(path.join(__dirname, './controller') + item.cont);
@@ -129,14 +138,15 @@ function initServer () {
 											conFun(req, res, urlObj.query, postData, null);
 										} else {
 											res.write('错误: 控制器必须是一个函数!');
+											res.end();
 										}
 									}
 
 								} catch (err) {
 									res.write('错误: ' + err.message);
+									res.end();
 								}
 							}
-							res.end();
 						})
 					})
 				}
