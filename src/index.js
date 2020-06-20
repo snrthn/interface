@@ -6,14 +6,11 @@ var config = require('../config');
 var fs = require('fs');
 var qs = require('qs');
 
-/* 定义控制器路由表 */
-var routerList = [];
-
 /* 创建服务器 */
 function initServer () {
 	var server = http.createServer(function (req, res) {
 		/* 刷新路由表 */
-		routerList = [];
+		var routerList = [];
 
 		fillRouterTable(function () {
 			/* 设置请求头和跨域 */
@@ -174,7 +171,7 @@ function initServer () {
 				res.write(config.errMsg);
 				res.end();
 			}
-		});
+		}, routerList);
 	})
 
 	/* 监听端口 */
@@ -184,8 +181,9 @@ function initServer () {
 }
 
 /* 填装控制器路由表 */
-function fillRouterTable (callback) {
+function fillRouterTable (callback, routerList) {
 	controller(function (filesObj) {
+
 		var { dataCollection, contCollection } = filesObj;
 
 		var dataLen = dataCollection.length;
@@ -227,8 +225,8 @@ function fillRouterTable (callback) {
 			})
 		}
 
-		if (callback && typeof callback === 'function') callback();
-	})
+		if (callback && typeof callback === 'function') callback(routerList);
+	}, routerList)
 }
 
 /* 接收POST数据流 */
