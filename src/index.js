@@ -39,7 +39,6 @@ function initServer () {
 
 			/* 匹配路由控制表 */
 			routerList.map(function (item) {
-
 				if (item.data && item.cont && item.data.substr(0, item.data.lastIndexOf('.')) === urlObj.pathname) {
 					isNoPage = true;
 					postDataFun(req, function (postData) {
@@ -66,7 +65,30 @@ function initServer () {
 										Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
 										var conFun = require(path.join(__dirname, './controller') + item.cont);
 										if (conFun && typeof conFun === 'function') {
-											conFun(req, res, urlObj.query, postData, jsonData);
+
+											// 取 JSON 数据
+											fs.readFile(path.join(__dirname, './data') + item.data, function (err, data) {
+												if (err) {
+													res.write('错误: 数据 json 文件读取失败!');
+													res.end();
+												} else {
+													var dataStr = data.toString();
+													try {
+														/* 对 utf-8 编码的 JSON 文件进行特殊处理 */
+														if (dataStr.substr(0, 1).charCodeAt() === 65279) {
+															dataStr = dataStr.substr(1, dataStr.length - 1);
+														}
+														/* 检查文件内容是否符合 JSON 规范 */
+														var jsonData = JSON.parse(dataStr);
+
+														conFun(req, res, urlObj.query, postData, jsonData);
+													} catch (err) {
+														res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
+														res.end();
+													}
+												}
+											})
+											
 										} else {
 											res.write('错误: 控制器必须是一个函数!');
 											res.end();
@@ -131,7 +153,7 @@ function initServer () {
 										Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './controller') + item.cont));
 										var conFun = require(path.join(__dirname, './controller') + item.cont);
 										if (conFun && typeof conFun === 'function') {
-											conFun(req, res, urlObj.query, postData, jsonData);
+											conFun(req, res, urlObj.query, postData);
 										} else {
 											res.write('错误: 控制器必须是一个函数!');
 											res.end();
