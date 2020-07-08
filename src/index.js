@@ -9,6 +9,9 @@ var qs = require('qs');
 /* 创建服务器 */
 function initServer () {
 	var server = http.createServer(function (req, res) {
+		/* 初始化数据库 */
+		global.database = require('./sql');
+
 		/* 刷新路由表 */
 		var routerList = [];
 

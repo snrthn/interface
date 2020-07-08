@@ -3,16 +3,18 @@
 
 var conn = require('../sql/connect');
 
-module.exports = function (basename, callback) {
+module.exports = function (options, callback) {
 
-	var sqlCode = 'SELECT * FROM student';
+	var db = conn(options.dataname);
 
-	var db = conn(basename);
+	var sqlCode = 'SELECT * FROM ' + options.tablename;
 
 	db.query(sqlCode, function (err, data) {
 
 		if (callback && typeof callback === 'function') {
+
 			callback(err, data);
+
 		}
 
 	})
