@@ -9,20 +9,31 @@ var qs = require('qs');
 /* 创建服务器 */
 function initServer () {
 	var server = http.createServer(function (req, res) {
+
+		/* 设置请求头和跨域 */
+		res.writeHead(200, {
+			'Content-Type': 'application/json;charset=UTF-8',
+			'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
+			'Access-Control-Allow-Headers': '*',
+			'Access-Control-Allow-Origin': '*'
+		});
+		
 		/* 初始化数据库 */
-		global.database = require('./sql');
+		global.database = (function () {
+			Reflect.deleteProperty(require.cache, require.resolve(path.join(__dirname, './sql')));
+			return require('./sql');
+		}());
+
+		/* 处理复杂类型请求 */
+		if (req.method === 'OPTIONS') {
+			res.write('ALLOW');
+			res.end();
+		}
 
 		/* 刷新路由表 */
 		var routerList = [];
 
 		fillRouterTable(function () {
-			/* 设置请求头和跨域 */
-			res.writeHead(200, {
-				'Content-Type': 'application/json;charset=UTF-8',
-				'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
-				'Access-Control-Allow-Headers': '*',
-				'Access-Control-Allow-Origin': '*'
-			});
 
 			/* 取URL参数 */
 			var urlObj = urlParser.parse(req.url, true);

@@ -11,9 +11,17 @@ module.exports = function (options, callback) {
 
 	var values = '"' + Object.values(options.data).join('","') + '"';
 
-	var sqlCode = 'INSERT INTO ' + options.tablename + ' (' + keys + ') VALUES (' + values + ')';
+	var updStr = '';
 
-	console.log(sqlCode);
+	for (var key in options.data) {
+		if (key !== 'id') updStr += '' + key + '' + '=' + '"' + options.data[key] + '", ';
+	}
+
+	updStr = updStr.replace(/, $/, ' ');
+
+	updStr += 'WHERE ID = ' + '"' + options.data.id + '"';
+
+	var sqlCode = 'UPDATE ' + options.tablename + ' SET ' + updStr;
 
 	db.query(sqlCode, function (err, data) {
 

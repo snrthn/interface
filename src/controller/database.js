@@ -1,8 +1,6 @@
 
 module.exports = function (req, res, query, data) {
 
-	console.log(req.method);
-
 	let options = {
 		dataname: 'stu',
 		tablename: 'student',
@@ -69,7 +67,6 @@ function addData (options, res) {
 
 // 修改数据
 function updateData (options, res) {
-	console.log('您大爷');
 	database.update(options, function (err, data) {
 		if (!err) {
 			res.write(JSON.stringify({
@@ -90,7 +87,7 @@ function updateData (options, res) {
 
 // 删除数据
 function removeData (options, res) {
-	database.update(options, function (err, data) {
+	database.remove(options, function (err, data) {
 		if (!err) {
 			res.write(JSON.stringify({
 				status: 200,
