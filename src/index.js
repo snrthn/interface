@@ -279,7 +279,7 @@ function fdToObj (str) {
 	var resObj = {};
 	arr.map(function (item) {
 		var temp = item.split('\r\n\r\n');
-		resObj[temp[0].split('=')[1]] = temp[1];
+		resObj[temp[0].split('=')[1].replace(/^\"|\"$/g, '')] = temp[1].replace(/\n/, '');
 	})
 	return resObj;
 }
