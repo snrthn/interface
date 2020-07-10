@@ -260,7 +260,7 @@ function postDataFun (req, callback) {
 
 		/* 容错 */
 		try {
-			if (postStr.indexOf('WebKitFormBoundary') !== -1) {
+			if (postStr.indexOf('Content-Disposition: form-data;') !== -1) {
 				postData = fdToObj(postStr);
 			} else {
 				postData = JSON.parse(postStr);
@@ -275,11 +275,10 @@ function postDataFun (req, callback) {
 
 /* formData 数据转 Object */
 function fdToObj (str) {
-	var arr = str.match(/\w+?="\w+"\r\n\r\n[^\n]+/g) || [];
 	var resObj = {};
-	arr.map(function (item) {
-		var temp = item.split('\r\n\r\n');
-		resObj[temp[0].split('=')[1].replace(/^\"|\"$/g, '')] = temp[1].replace(/\n/, '');
+	var tempArr = str.match(/\"[^\"]+\"\r\n\r\n[^\n]+/g);
+	tempArr.map(function (item) {
+		resObj[item.split(/\s+/)[0].replace(/^\"|\"$/g, '')] = item.split(/\s+/)[1];
 	})
 	return resObj;
 }
