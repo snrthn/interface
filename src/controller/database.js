@@ -32,7 +32,7 @@ function getData (options, res) {
 				status: 200,
 				success: true,
 				message: '查询成功',
-				list: data
+				list: data.reverse()
 			}));
 		} else {
 			res.write(JSON.stringify({

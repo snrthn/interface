@@ -13,7 +13,7 @@ let dataconf = {
 	user: 'root',
 
 	// 数据库口令
-	password: 'snrtpsj',
+	password: '123456',
 
 	// 数据库名
 	database: '',

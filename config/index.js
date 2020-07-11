@@ -12,7 +12,10 @@ let config = {
 	indexMsg: 'Hello World!',
 
 	// 地址不存在提示语
-	errMsg: '请求地址不存在 - 404'
+	errMsg: '请求地址不存在 - 404',
+
+	// 是否需要缓存
+	isCache: false
 
 };
 
