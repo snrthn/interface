@@ -35,12 +35,6 @@ function initServer () {
 		/* 初始化数据库 */
 		global.database = require('./sql');
 
-		/* 处理复杂类型请求 */
-		if (req.method === 'OPTIONS') {
-			res.write('');
-			res.end();
-		}
-
 		/* 处理请求 */
 		handleRequest(req, res, options);
 
