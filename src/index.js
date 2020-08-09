@@ -11,13 +11,15 @@ var qs = require('qs');
 function initServer () {
 
 	// 定义配置信息
-	var options = {
-		/* 路由表 */
-		routerList: [],
+	var options = function () {
+		return {
+			/* 路由表 */
+			routerList: []
+		}
+	};
 
-		/* 是否首次加载 */
-		isFirstRequest: true
-	}
+	/* 预装载路由表 */
+	if (config.isCache) fillRouterTable(options());
 
 	var server = http.createServer(function (req, res) {
 
@@ -31,12 +33,17 @@ function initServer () {
 			'Access-Control-Allow-Headers': '*',
 			'Access-Control-Allow-Origin': '*'
 		});
-		
+
 		/* 初始化数据库 */
 		global.database = require('./sql');
 
-		/* 处理请求 */
-		handleRequest(req, res, options);
+		if (req.method === 'OPTIONS') {
+			res.write('');
+			res.end();
+		} else {
+			/* 处理请求 */
+			handleRequest(req, res, options());
+		}
 
 	})
 
@@ -52,32 +59,14 @@ function handleRequest (req, res, options) {
 	/* 如果没有缓存 则每次请求需要清除路由表重新取文件 */
 	if (!config.isCache) options.routerList = [];
 
-
-	if (options.isFirstRequest) {
-		/* 启动服务器首次请求 */
-		if (config.isCache) {
-			/* 有缓存 */
-			fillRouterTable(options, function () {
-				forEachRouterTab(req, res, options);
-			});
-		} else {
-			/* 无缓存 */
-			fillRouterTable(options, function () {
-				forEachRouterTab(req, res, options);
-			});
-		}
-		options.isFirstRequest = false;
+	if (config.isCache) {
+		/* 有缓存 */
+		forEachRouterTab(req, res, options);
 	} else {
-		/* 启动服务器后 非首次请求 */
-		if (config.isCache) {
-			/* 有缓存 */
+		/* 无缓存 */
+		fillRouterTable(options, function () {
 			forEachRouterTab(req, res, options);
-		} else {
-			/* 无缓存 */
-			fillRouterTable(options, function () {
-				forEachRouterTab(req, res, options);
-			});
-		}
+		});
 	}
 }
 
@@ -143,6 +132,7 @@ function forEachRouterTab (req, res, options) {
 		isNoPage = true;
 		res.write(config.indexMsg);
 		res.end();
+		return;
 	}
 
 	/* 匹配路由控制表 */
@@ -191,6 +181,7 @@ function forEachRouterTab (req, res, options) {
 												var json = require(path.join(__dirname, './data') + item.data);
 
 												conFun(req, res, urlObj.query, postData, json);
+
 											} catch (err) {
 												res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
 												res.end();
@@ -224,13 +215,14 @@ function forEachRouterTab (req, res, options) {
 							if (dataStr.substr(0, 1).charCodeAt() === 65279) {
 								dataStr = dataStr.substr(1, dataStr.length - 1);
 							}
-							/* 检查文件内容是否符合 JSON 规范 */
+							// 检查文件内容是否符合 JSON 规范 
 							var jsonData = JSON.parse(dataStr);
 
 							var json = require(path.join(__dirname, './data') + item.data);
 
 							res.write(JSON.stringify(json));
 							res.end();
+
 						} catch (err) {
 							res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
 							res.end();
@@ -277,6 +269,7 @@ function forEachRouterTab (req, res, options) {
 				});
 			});
 		}
+		return;
 	})
 
 	/* 未匹配到页面 404 */

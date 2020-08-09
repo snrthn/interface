@@ -1,6 +1,9 @@
 
+// 操作数据库示例
+
 module.exports = function (req, res, query, data) {
 
+	// 配置数据库
 	let options = {
 		dataname: 'stu',
 		tablename: 'student',
