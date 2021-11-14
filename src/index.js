@@ -318,7 +318,7 @@ function clearRequireCache () {
 }
 
 /* formData 数据转 Object */
-function fdToObj (str) {
+function fdToObj (bufStr, bufStr) {
 	// 定义最终返回结果
     var retObj = {};
 
