@@ -364,6 +364,8 @@ function fdToObj (bufStr, bufStr) {
                     fileInfo[key] = val;
                 }
             })
+            // 添加文件扩展名
+            fileInfo.extname = path.extname(fileInfo.filename);
             fileInfo.binary = dataInfo;
 
             // 填充数据 文件上传可能出现多个字段，每个字段可能上传多个文件
