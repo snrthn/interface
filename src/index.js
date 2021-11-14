@@ -297,7 +297,8 @@ function postDataFun (req, callback) {
 		/* 容错 */
 		try {
 			if (postStr.indexOf('Content-Disposition: form-data;') !== -1) {
-				postData = fdToObj(postStr);
+				var boundary = '--' + req.headers['content-type'].split('; ')[1].split('=')[1];
+				postData = fdToObj(postStr, boundary);
 			} else {
 				postData = JSON.parse(postStr);
 			}
@@ -318,12 +319,64 @@ function clearRequireCache () {
 
 /* formData 数据转 Object */
 function fdToObj (str) {
-	var resObj = {};
-	var tempArr = str.match(/\"[^\"]+\"\r\n\r\n[^\n]+/g);
-	tempArr.map(function (item) {
-		resObj[item.split(/\s+/)[0].replace(/^\"|\"$/g, '')] = item.split(/\s+/)[1];
-	})
-	return resObj;
+	// 定义最终返回结果
+    var retObj = {};
+
+    // 将原数据通过分割符分割
+    var sliceArr = bufStr.split(boundary);
+
+    // 移除切片数组首尾非数据元素节点
+    sliceArr = sliceArr.slice(1, sliceArr.length - 1);
+
+    // 移除切片中字符串的首尾换行
+    sliceArr = sliceArr.map(function (str) {
+        return str.replace(/^\r\n/, '').replace(/\r\n$/, '');
+    })
+
+    // 处理数据
+    sliceArr.map(function (str) {
+
+        var sliceIndex = str.indexOf('\r\n\r\n');
+
+        var fieldInfo = str.slice(0, sliceIndex);
+
+        var dataInfo = str.slice(sliceIndex + 4, str.length);
+
+        var field;
+
+        if (fieldInfo.indexOf('\r\n') === -1) {
+            // 字段数据
+            field = fieldInfo.split('; ')[1].split('=')[1].replace(/^"/, '').replace(/\"$/, '');
+
+            // 填充数据
+            retObj[field] = dataInfo;
+            
+        } else {
+            // 文件数据
+            var labels = fieldInfo.replace('\r\n', '; ').split('; ');
+            var fileInfo = {};
+            labels = labels.map(function (label) {
+                if (label.indexOf('=') !== -1) {
+                    fileInfo[label.split('=')[0]] = label.split('=')[1].replace(/^"/, '').replace(/\"$/, '');
+                } else {
+                    var key = label.split(': ')[0].trim();
+                    var val = label.split(': ')[1].trim();
+                    fileInfo[key] = val;
+                }
+            })
+            fileInfo.binary = dataInfo;
+
+            // 填充数据 文件上传可能出现多个字段，每个字段可能上传多个文件
+            if (!retObj[fileInfo.name]) {
+                retObj[fileInfo.name] = [fileInfo];
+            } else {
+                retObj[fileInfo.name].push(fileInfo);
+            }
+        }
+
+    })
+
+    return retObj;
 }
 
 /* 将服务器程序输出 */
