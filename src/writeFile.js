@@ -29,7 +29,7 @@ module.exports = function (options) {
                     for (var i = 0; i < arrFiles.length; i++) {
                         var fileObj = arrFiles[i];
                         var fileName = new Date() * 1 + '_' + parseInt(Math.random() * 1000000);
-                        fileInfo[fileKey].push((options.baseUrl || '') + downLoadPath + fileName + fileObj.extname)
+                        fileInfo[fileKey].push((options.fileOrigin || global.fileOrigin) + downLoadPath + fileName + fileObj.extname)
                         bufStreamList.push({
                             binary: fileObj.binary,
                             filename: fileName + fileObj.extname

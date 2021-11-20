@@ -17,6 +17,9 @@ let config = {
 	// 默认上传文件目录
 	uploadDir: '../upload',
 
+	// 上传文件访问域名路径
+	fileOrigin: 'https://www.xxx.com/files',
+
 	// 是否需要缓存
 	isCache: false
 

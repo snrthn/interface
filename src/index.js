@@ -39,6 +39,7 @@ function initServer () {
 
 		/* 初始化上传配置 */
 		global.uploadDir = path.resolve(__dirname, config.uploadDir);
+		global.fileOrigin = config.fileOrigin;
 		global.writeFile = writeFile;
 
 		if (req.method === 'OPTIONS') {
