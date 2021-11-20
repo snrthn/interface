@@ -3,9 +3,9 @@ var path = require('path');
 var urlParser = require('url');
 var controller = require('./router');
 var config = require('../config');
+var writeFile = require('./writeFile');
 var fs = require('fs');
 var qs = require('qs');
-
 
 /* 创建服务器 */
 function initServer () {
@@ -36,6 +36,10 @@ function initServer () {
 
 		/* 初始化数据库 */
 		global.database = require('./sql');
+
+		/* 初始化上传配置 */
+		global.uploadDir = path.resolve(__dirname, config.uploadDir);
+		global.writeFile = writeFile;
 
 		if (req.method === 'OPTIONS') {
 			res.write('');

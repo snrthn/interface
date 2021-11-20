@@ -14,6 +14,9 @@ let config = {
 	// 地址不存在提示语
 	errMsg: '请求地址不存在 - 404',
 
+	// 默认上传文件目录
+	uploadDir: '../upload',
+
 	// 是否需要缓存
 	isCache: false
 
