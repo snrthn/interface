@@ -281,31 +281,43 @@ function forEachRouterTab (req, res, options) {
 
 /* 接收POST数据流 */
 function postDataFun (req, callback) {
+	// FORM 表单数据分割线
+	var boundary = '';
+
+	try {
+		boundary = '--' + req.headers['content-type'].split('; ')[1].split('=')[1];
+		/* 设置数据编码 - 文件上传 */
+		req.setEncoding('binary');
+	} catch (e) {}
+
 	/* 取POST参数 */
-	var tempStream = [];
+	var streamBody = '';
 
 	/* 分段接收 */
 	req.on('data', function (str) {
-		tempStream.push(str);
+		streamBody += str;
 	})
 
 	/* 接收完成 */
 	req.on('end', function () {
 		var postData;
-		var postStr = tempStream.toString();
 
 		/* 容错 */
 		try {
-			if (postStr.indexOf('Content-Disposition: form-data;') !== -1) {
-				var boundary = '--' + req.headers['content-type'].split('; ')[1].split('=')[1];
-				postData = fdToObj(postStr, boundary);
+			if (streamBody.indexOf('Content-Disposition: form-data;') !== -1) {
+				if (!boundary) {
+					/* 普通 FORM 表单 非二进制 */
+					var tempBoundaryStr = streamBody.split('\r\n')[streamBody.split('\r\n').length - 2];
+					boundary = tempBoundaryStr.substr(0, tempBoundaryStr.length - 2);
+				}
+				postData = fdToObj(streamBody, boundary);
 			} else {
-				postData = JSON.parse(postStr);
+				postData = JSON.parse(streamBody);
 			}
 		} catch (e) {
-			postData = qs.parse(postStr, {ignoreQueryPrefix: true});
+			postData = qs.parse(streamBody, {ignoreQueryPrefix: true});
 		}
-
+		
 		if (callback && typeof callback === 'function') callback(postData);
 	})
 }
@@ -317,8 +329,13 @@ function clearRequireCache () {
 	}
 }
 
-/* formData 数据转 Object */
-function fdToObj (bufStr, bufStr) {
+/**
+ * 
+ * @param {String} bufStr Buffer字符串
+ * @param {String} boundary FormData分割线
+ * @returns {Object} 返回参数包
+ */
+function fdToObj (bufStr, boundary) {
 	// 定义最终返回结果
     var retObj = {};
 
