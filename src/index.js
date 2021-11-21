@@ -309,7 +309,7 @@ function postDataFun (req, callback) {
 
 		/* 容错 */
 		try {
-			if (streamBody.indexOf('Content-Disposition: form-data;') !== -1) {
+			if (isFormData(req.headers)) {
 				if (!boundary) {
 					/* 普通 FORM 表单 非二进制 */
 					var tempBoundaryStr = streamBody.split('\r\n')[streamBody.split('\r\n').length - 2];
@@ -334,12 +334,12 @@ function clearRequireCache () {
 	}
 }
 
-/**
- * 
- * @param {String} bufStr Buffer字符串
- * @param {String} boundary FormData分割线
- * @returns {Object} 返回参数包
- */
+/* 判断是否为 Form 表单数据 */
+function isFormData (headers) {
+	return headers['content-type'] === 'application/x-www-form-urlencoded' || headers['content-type'].indexOf('multipart/form-data; boundary=----WebKitFormBoundary') !== -1;
+}
+
+/* Form数据转对象 */
 function fdToObj (bufStr, boundary) {
 	// 定义最终返回结果
     var retObj = {};
