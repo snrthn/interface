@@ -379,7 +379,7 @@ function fdToObj (bufStr, boundary) {
             var fileInfo = {};
             labels = labels.map(function (label) {
                 if (label.indexOf('=') !== -1) {
-                    fileInfo[label.split('=')[0]] = label.split('=')[1].replace(/^"/, '').replace(/\"$/, '');
+                    fileInfo[label.split('=')[0]] = label.split(label.split('=')[0] + '=')[1].replace(/^"/, '').replace(/\"$/, '');
                 } else {
                     var key = label.split(': ')[0].trim();
                     var val = label.split(': ')[1].trim();
