@@ -12,7 +12,7 @@ module.exports = function (options) {
     // 建立文件存放目录
     var date = new Date();
     var year = date.getFullYear();
-    var month = String(date.getMonth() + 1).padStart(0, 2);
+    var month = String(date.getMonth() + 1).padStart(2, 0);
     var downLoadPath = '/' + year + month + '/';
     var writeFileDir = (options.uploadDir || global.uploadDir) + '\\' + year + month + '\\';
 
