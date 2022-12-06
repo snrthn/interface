@@ -19,7 +19,7 @@
   "homepage": "https://github.com/snrthn/interface#readme",
   "devDependencies": {
     "mysql": "^2.18.1",
-    "qs": "^6.9.4",
+    "qs": "^6.9.7",
     "rd": "^2.0.1",
     "url": "^0.11.0"
   }
