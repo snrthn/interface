@@ -161,9 +161,6 @@ function forEachRouterTab (req, res, options) {
 							if (strFun.length === 0) {
 								res.write('错误: 控制器文件为空!');
 								res.end();
-							} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
-								res.write('错误: 控制器函数体内缺少回执语句!');
-								res.end();
 							} else {
 								var conFun = require(path.join(__dirname, './controller') + item.cont);
 								if (conFun && typeof conFun === 'function') {
@@ -185,7 +182,23 @@ function forEachRouterTab (req, res, options) {
 
 												var json = require(path.join(__dirname, './data') + item.data);
 
-												conFun(req, res, urlObj.query, postData, json);
+												var result = conFun(req, res, urlObj.query, postData, json);
+
+												if (!res.finished) {
+													try {
+														if (typeof result === 'object') {
+															res.write(JSON.stringify(result));
+														} else {
+															res.write(result);
+														}
+													} catch (err) {
+														res.write(JSON.stringify({
+															code: 500,
+															msg: err
+														}))
+													}
+													res.end();
+												}
 
 											} catch (err) {
 												res.write('错误: 数据 json 内部不是一个有效的JOSN数据!');
@@ -254,13 +267,25 @@ function forEachRouterTab (req, res, options) {
 							if (strFun.length === 0) {
 								res.write('错误: 控制器文件为空!');
 								res.end();
-							} else if (strFun.indexOf('.write(') === -1 && strFun.indexOf('.end(') === -1) {
-								res.write('错误: 控制器函数体内缺少回执语句!');
-								res.end();
 							} else {
 								var conFun = require(path.join(__dirname, './controller') + item.cont);
 								if (conFun && typeof conFun === 'function') {
-									conFun(req, res, urlObj.query, postData);
+									var result = conFun(req, res, urlObj.query, postData);
+									if (!res.finished) {
+										try {
+											if (typeof result === 'object') {
+												res.write(JSON.stringify(result));
+											} else {
+												res.write(result);
+											}
+										} catch (err) {
+											res.write(JSON.stringify({
+												code: 500,
+												msg: err
+											}))
+										}
+										res.end();
+									}
 								} else {
 									res.write('错误: 控制器必须是一个函数!');
 									res.end();
