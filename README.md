@@ -52,8 +52,39 @@ module.exports = function (req, res, query, data, json) {
 
 	// 这里可对 resData 做任何处理
 
-	// 返回数据
+	// 返回数据 - 方式1
 	res.write(JSON.stringify(resData));
 	res.end();
+
+	// 返回数据 - 方式2
+	return resData;
+};
+```
+
+```javascript
+module.exports = function (req, res, query, data) {
+	// 文件上传示例
+
+	// 检测文件
+	if (!data.file) {
+		// 上传文件为空
+		return {
+			state: 200,
+			success: true,
+			data: [],
+			message: '选择文件为空!'
+		}
+	}
+
+	// 写入文件
+	const fileInfo = await global.writeFile({ data });
+
+	// 返回结果
+	return {
+		state: 200,
+		success: true,
+		data: fileInfo,
+		message: '文件上传成功!'
+	};
 };
 ```
