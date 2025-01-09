@@ -166,7 +166,7 @@ function forEachRouterTab (req, res, options) {
 								if (conFun && typeof conFun === 'function') {
 
 									// 取 JSON 数据
-									fs.readFile(path.join(__dirname, './data') + item.data, function (err, data) {
+									fs.readFile(path.join(__dirname, './data') + item.data, async function (err, data) {
 										if (err) {
 											res.write('错误: 数据 json 文件读取失败!');
 											res.end();
@@ -182,7 +182,7 @@ function forEachRouterTab (req, res, options) {
 
 												var json = require(path.join(__dirname, './data') + item.data);
 
-												var result = conFun(req, res, urlObj.query, postData, json);
+												var result = await conFun(req, res, urlObj.query, postData, json);
 
 												if (!res.finished) {
 													try {
@@ -251,7 +251,7 @@ function forEachRouterTab (req, res, options) {
 		} else if (!item.data && item.cont && item.cont.substr(0, item.cont.lastIndexOf('.')) === urlObj.pathname) {
 			isNoPage = true;
 			postDataFun(req, function (postData) {
-				fs.readFile(path.join(__dirname, './controller') + item.cont, function (err, data) {
+				fs.readFile(path.join(__dirname, './controller') + item.cont, async function (err, data) {
 					if (err) {
 						res.write('错误: 控制器 js 文件读取失败!');
 						res.end();
@@ -270,7 +270,7 @@ function forEachRouterTab (req, res, options) {
 							} else {
 								var conFun = require(path.join(__dirname, './controller') + item.cont);
 								if (conFun && typeof conFun === 'function') {
-									var result = conFun(req, res, urlObj.query, postData);
+									var result = await conFun(req, res, urlObj.query, postData);
 									if (!res.finished) {
 										try {
 											if (typeof result === 'object') {
