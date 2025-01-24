@@ -26,13 +26,10 @@ function initServer () {
 		/* 缓存机制 */
 		if (!config.isCache) clearRequireCache();
 
+		var host = req.headers.referer ? req.headers.referer.substr(0, req.headers.referer.length - 1) : 'common';
+
 		/* 设置请求头和跨域 */
-		res.writeHead(200, {
-			'Content-Type': 'application/json;charset=UTF-8',
-			'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS,HEAD',
-			'Access-Control-Allow-Headers': '*',
-			'Access-Control-Allow-Origin': '*'
-		});
+		res.writeHead(200, config.headerConfig[host]);
 
 		/* 初始化数据库 */
 		global.database = require('./sql');

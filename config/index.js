@@ -2,6 +2,7 @@
 // 服务器配置
 
 let dataConfig = require('./database');
+let headerConfig = require('./headers');
 
 let config = {
 
@@ -25,4 +26,8 @@ let config = {
 
 };
 
-module.exports = {...config, ...dataConfig};
+module.exports = {
+	headerConfig,
+	...config,
+	...dataConfig
+};
