@@ -26,10 +26,10 @@ function initServer () {
 		/* 缓存机制 */
 		if (!config.isCache) clearRequireCache();
 
-		var host = req.headers.referer ? req.headers.referer.substr(0, req.headers.referer.length - 1) : 'common';
+		var host = req.headers.referer && req.headers.referer.substr(0, req.headers.referer.length - 1);
 
 		/* 设置请求头和跨域 */
-		res.writeHead(200, config.headerConfig[host]);
+		res.writeHead(200, config.headerConfig[host] || config.headerConfig['common']);
 
 		/* 初始化数据库 */
 		global.database = require('./sql');
