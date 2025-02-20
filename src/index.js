@@ -29,7 +29,8 @@ function initServer () {
 		var host = req.headers.referer && req.headers.referer.substr(0, req.headers.referer.length - 1);
 
 		/* 设置请求头和跨域 */
-		res.writeHead(200, config.headerConfig[host] || config.headerConfig['common']);
+		global.headerConfig = config.headerConfig[host] || config.headerConfig['common'];
+		res.writeHead(200, global.headerConfig);
 
 		/* 初始化数据库 */
 		global.database = require('./sql');
