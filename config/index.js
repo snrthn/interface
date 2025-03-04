@@ -4,6 +4,7 @@
 let mimeConfig = require('./mime');
 let dataConfig = require('./database');
 let headerConfig = require('./headers');
+let httpCode = require('./httpCode');
 
 let config = {
 
@@ -22,6 +23,9 @@ let config = {
 	// 默认上传文件目录
 	uploadDir: '../upload',
 
+	// 静态资源目录
+	staticDir: './src/static',
+
 	// 上传文件访问域名路径
 	fileOrigin: 'https://www.xxx.com/files',
 
@@ -33,6 +37,7 @@ let config = {
 module.exports = {
 	headerConfig,
 	mimeConfig,
+	httpCode,
 	...config,
 	...dataConfig
 };

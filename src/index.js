@@ -39,14 +39,36 @@ function initServer () {
 		global.uploadDir = path.resolve(__dirname, config.uploadDir);
 		global.mimeConfig = config.mimeConfig;
 		global.fileOrigin = config.fileOrigin;
+		global.httpCode = config.httpCode;
 		global.writeFile = writeFile;
 
 		if (req.method === 'OPTIONS') {
 			res.write('');
 			res.end();
 		} else {
-			/* 处理请求 */
-			handleRequest(req, res, options());
+			/* 如果是静态资源 则直接去静态资源文件夹读取 */
+			if (req.url.indexOf('.') !== -1) {
+				var url = req.url;
+				var extName = url.substr(url.lastIndexOf('.') + 1, url.length - 1);
+				if (global.mimeConfig[extName]) {
+					fs.readFile(config.staticDir + url, function (err, data) {
+						if (!err) {
+							/* 处理静态文件 */
+							res.writeHead(200, Object.assign({
+								'content-type': global.mimeConfig[extName]
+							}));
+							res.write(data);
+							res.end();
+						} else {
+							/* 处理API请求 */
+							handleRequest(req, res, options());
+						}
+					});
+				}
+			} else {
+				/* 处理API请求 */
+				handleRequest(req, res, options());
+			}
 		}
 
 	})
