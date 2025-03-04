@@ -37,6 +37,7 @@ function initServer () {
 
 		/* 初始化上传配置 */
 		global.uploadDir = path.resolve(__dirname, config.uploadDir);
+		global.mimeConfig = config.mimeConfig;
 		global.fileOrigin = config.fileOrigin;
 		global.writeFile = writeFile;
 

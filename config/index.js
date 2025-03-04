@@ -1,6 +1,7 @@
 ﻿
 // 服务器配置
 
+let mimeConfig = require('./mime');
 let dataConfig = require('./database');
 let headerConfig = require('./headers');
 
@@ -13,7 +14,10 @@ let config = {
 	indexMsg: 'Hello World!',
 
 	// 地址不存在提示语
-	errMsg: '请求地址不存在 - 404',
+	errMsg: JSON.stringify({
+		code: 404,
+		msg: "请求地址不存在"
+	}),
 
 	// 默认上传文件目录
 	uploadDir: '../upload',
@@ -28,6 +32,7 @@ let config = {
 
 module.exports = {
 	headerConfig,
+	mimeConfig,
 	...config,
 	...dataConfig
 };
