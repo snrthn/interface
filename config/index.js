@@ -4,7 +4,7 @@
 let mimeConfig = require('./mime');
 let dataConfig = require('./database');
 let headerConfig = require('./headers');
-let httpCode = require('./httpCode');
+let httpCode = require('./httpcode');
 
 let config = {
 
