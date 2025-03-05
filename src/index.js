@@ -64,6 +64,9 @@ function initServer () {
 							handleRequest(req, res, options());
 						}
 					});
+				} else {
+					/* 处理API请求 */
+					handleRequest(req, res, options());
 				}
 			} else {
 				/* 处理API请求 */
