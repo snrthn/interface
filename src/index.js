@@ -208,7 +208,7 @@ function forEachRouterTab (req, res, options) {
 
 												var result = await conFun(req, res, urlObj.query, postData, json);
 
-												if (!res.finished) {
+												if (result) {
 													try {
 														if (typeof result === 'object') {
 															res.write(JSON.stringify(result));
@@ -295,7 +295,7 @@ function forEachRouterTab (req, res, options) {
 								var conFun = require(path.join(__dirname, './controller') + item.cont);
 								if (conFun && typeof conFun === 'function') {
 									var result = await conFun(req, res, urlObj.query, postData);
-									if (!res.finished) {
+									if (result) {
 										try {
 											if (typeof result === 'object') {
 												res.write(JSON.stringify(result));
