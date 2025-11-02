@@ -29,7 +29,7 @@ module.exports = function (req, res, query, data) {
 
 // 查询数据
 function getData (options, res) {
-	database.query(options, function (err, data) {
+	database.query({ ...options, include_deleted: false }, function (err, data) {
 		if (!err) {
 			res.write(JSON.stringify({
 				status: 200,
@@ -90,7 +90,8 @@ function updateData (options, res) {
 
 // 删除数据
 function removeData (options, res) {
-	database.remove(options, function (err, data) {
+	// 添加逻辑删除参数，默认为 true（逻辑删除）
+	database.remove({ ...options, logical_delete: true }, function (err, data) {
 		if (!err) {
 			res.write(JSON.stringify({
 				status: 200,

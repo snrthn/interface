@@ -18,8 +18,8 @@ let dataconf = {
 	// 数据库名
 	database: '',
 
-	// 字符集编码
-	charset: 'UTF8_GENERAL_CI'
+	// 字符集编码 - 支持 emoji 和特殊字符
+	charset: 'utf8mb4'
 
 }
 
