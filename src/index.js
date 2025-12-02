@@ -4,6 +4,7 @@ var urlParser = require('url');
 var controller = require('./router');
 var config = require('../config');
 var writeFile = require('./writeFile');
+var deleteFile = require('./deleteFile');
 var fs = require('fs');
 var qs = require('qs');
 
@@ -41,6 +42,7 @@ function initServer () {
 		global.fileOrigin = config.fileOrigin;
 		global.httpCode = config.httpCode;
 		global.writeFile = writeFile;
+		global.deleteFile = deleteFile;
 
 		if (req.method === 'OPTIONS') {
 			res.write('');
